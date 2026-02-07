@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,6 +12,7 @@
       background-color: #f8fafc;
       -webkit-tap-highlight-color: transparent;
       min-height: 100vh;
+      overflow-x: hidden;
     }
     .custom-shadow {
       box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.05);
@@ -24,15 +24,50 @@
       from { text-shadow: 0 0 4px rgba(34, 197, 94, 0.2); }
       to { text-shadow: 0 0 12px rgba(34, 197, 94, 0.5); }
     }
-    .safe-bottom {
-      padding-bottom: env(safe-area-inset-bottom);
-    }
     .no-scrollbar::-webkit-scrollbar {
       display: none;
     }
     .no-scrollbar {
       -ms-overflow-style: none;
       scrollbar-width: none;
+    }
+    /* Floating AI Bubble */
+    .ai-bubble {
+      position: fixed;
+      bottom: 100px;
+      right: 20px;
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-radius: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
+      cursor: pointer;
+      z-index: 100;
+      animation: float 3s ease-in-out infinite;
+      border: 3px solid rgba(255, 255, 255, 0.2);
+    }
+    @keyframes float {
+      0% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-10px) scale(1.05); }
+      100% { transform: translateY(0px) scale(1); }
+    }
+    .ai-pulse {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: #10b981;
+      border-radius: 50%;
+      opacity: 0.6;
+      animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+      z-index: -1;
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.8); opacity: 0.5; }
+      100% { transform: scale(2); opacity: 0; }
     }
   </style>
 <script type="importmap">
@@ -41,7 +76,8 @@
     "react/": "https://esm.sh/react@^19.2.4/",
     "react": "https://esm.sh/react@^19.2.4",
     "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/"
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "@google/genai": "https://esm.sh/@google/genai"
   }
 }
 </script>
