@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Submission, TaskStatus, Transaction, Task, TutorialConfig, TutorialStep, AppAnalytics, AdminCredentials } from '../types';
-import { ShieldAlert, Check, X, User, Edit3, Wallet, CreditCard, Plus, Trash2, LayoutList, CheckCircle2, Image as ImageIcon, Upload, Info, ExternalLink, ArrowLeft, History as HistoryIcon, BadgeCheck, DollarSign, PlayCircle, Video, ListOrdered, Link, PlusCircle, Layout, MessageSquare, Megaphone, BarChart3, Users, Zap, PlaySquare, UserMinus, Activity, Shield, Lock, Save, Eye, EyeOff } from 'lucide-react';
+import { Submission, TaskStatus, Transaction, Task, TutorialConfig, TutorialStep, AppAnalytics, AdminCredentials, AppConfig, WithdrawalMethod } from '../types';
+import { ShieldAlert, Check, X, User, Edit3, Wallet, CreditCard, Plus, Trash2, LayoutList, CheckCircle2, Image as ImageIcon, Upload, Info, ExternalLink, ArrowLeft, History as HistoryIcon, BadgeCheck, DollarSign, PlayCircle, Video, ListOrdered, Link, PlusCircle, Layout, MessageSquare, Megaphone, BarChart3, Users, Zap, PlaySquare, UserMinus, Activity, Shield, Lock, Save, Eye, EyeOff, Landmark } from 'lucide-react';
 
 interface AdminScreenProps {
   analytics: AppAnalytics;
@@ -9,6 +9,7 @@ interface AdminScreenProps {
   withdrawals: Transaction[];
   tasks: Task[];
   tutorialConfig: TutorialConfig;
+  appConfig: AppConfig;
   adminCredentials: AdminCredentials;
   onUpdateAdminCredentials: (creds: AdminCredentials) => void;
   onAction: (id: string, status: TaskStatus, approvedQuantity?: number) => void;
@@ -17,10 +18,11 @@ interface AdminScreenProps {
   onUpdateTask: (task: Task) => void;
   onDeleteTask: (id: string) => void;
   onUpdateTutorialConfig: (config: TutorialConfig) => void;
+  onUpdateAppConfig: (config: AppConfig) => void;
 }
 
-const AdminScreen: React.FC<AdminScreenProps> = ({ analytics, submissions, withdrawals, tasks, tutorialConfig, adminCredentials, onUpdateAdminCredentials, onAction, onWithdrawAction, onAddTask, onUpdateTask, onDeleteTask, onUpdateTutorialConfig }) => {
-  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'LEADS' | 'RECEIVED' | 'WITHDRAWALS' | 'TASKS' | 'TUTORIAL_MANAGE' | 'SECURITY'>('OVERVIEW');
+const AdminScreen: React.FC<AdminScreenProps> = ({ analytics, submissions, withdrawals, tasks, tutorialConfig, appConfig, adminCredentials, onUpdateAdminCredentials, onAction, onWithdrawAction, onAddTask, onUpdateTask, onDeleteTask, onUpdateTutorialConfig, onUpdateAppConfig }) => {
+  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'LEADS' | 'RECEIVED' | 'WITHDRAWALS' | 'TASKS' | 'TUTORIAL_MANAGE' | 'FINANCE' | 'SECURITY'>('OVERVIEW');
   const [editedQuantities, setEditedQuantities] = useState<Record<string, number>>({});
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
@@ -36,6 +38,17 @@ const AdminScreen: React.FC<AdminScreenProps> = ({ analytics, submissions, withd
 
   // Local Tutorial Edit State
   const [editTutorial, setEditTutorial] = useState<TutorialConfig>(tutorialConfig);
+
+  // Local App Config State (Finance)
+  const [editAppConfig, setEditAppConfig] = useState<AppConfig>(appConfig);
+  const [showMethodForm, setShowMethodForm] = useState(false);
+  const [newMethod, setNewMethod] = useState<WithdrawalMethod>({
+    id: '',
+    name: '',
+    icon: '',
+    color: 'border-slate-200',
+    activeBg: 'bg-slate-50'
+  });
 
   const boxColors = [
     { bg: 'bg-blue-50', border: 'border-blue-100', text: 'text-blue-900', accent: 'bg-blue-600' },
@@ -142,6 +155,40 @@ const AdminScreen: React.FC<AdminScreenProps> = ({ analytics, submissions, withd
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleMethodIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewMethod(prev => ({ ...prev, icon: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAddMethod = () => {
+    if (!newMethod.name || !newMethod.icon) return;
+    const methodId = newMethod.name.toLowerCase().replace(/\s+/g, '-');
+    setEditAppConfig({
+      ...editAppConfig,
+      withdrawalMethods: [...editAppConfig.withdrawalMethods, { ...newMethod, id: methodId }]
+    });
+    setNewMethod({ id: '', name: '', icon: '', color: 'border-slate-200', activeBg: 'bg-slate-50' });
+    setShowMethodForm(false);
+  };
+
+  const handleRemoveMethod = (id: string) => {
+    setEditAppConfig({
+      ...editAppConfig,
+      withdrawalMethods: editAppConfig.withdrawalMethods.filter(m => m.id !== id)
+    });
+  };
+
+  const handleSaveFinanceConfig = () => {
+    onUpdateAppConfig(editAppConfig);
+    alert("Financial settings updated successfully!");
   };
 
   const renderIcon = (icon: string, className: string = "w-full h-full object-cover rounded-xl") => {
@@ -421,6 +468,12 @@ const AdminScreen: React.FC<AdminScreenProps> = ({ analytics, submissions, withd
         >
           Global Hub
         </button>
+        <button 
+          onClick={() => { setActiveTab('FINANCE'); setShowTaskForm(false); }}
+          className={`flex-1 min-w-[70px] flex items-center justify-center gap-1.5 py-2.5 rounded-[18px] font-black text-[8px] uppercase tracking-widest transition-all ${activeTab === 'FINANCE' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400'}`}
+        >
+          Finance
+        </button>
       </div>
 
       {activeTab === 'SECURITY' && (
@@ -480,13 +533,6 @@ const AdminScreen: React.FC<AdminScreenProps> = ({ analytics, submissions, withd
                   </div>
                 </div>
 
-                <div className="bg-indigo-500/10 border border-indigo-500/20 p-5 rounded-[28px] flex items-start gap-4 mb-2">
-                   <Info size={16} className="text-indigo-400 shrink-0 mt-0.5" />
-                   <p className="text-[10px] text-indigo-200/60 font-medium leading-relaxed">
-                     Changes to these credentials will take effect immediately. Ensure you save these elsewhere as there is no automated recovery process for the admin panel.
-                   </p>
-                </div>
-
                 <button 
                   type="submit"
                   disabled={isSavingSecurity}
@@ -500,6 +546,123 @@ const AdminScreen: React.FC<AdminScreenProps> = ({ analytics, submissions, withd
                 </button>
              </form>
            </div>
+        </div>
+      )}
+
+      {activeTab === 'FINANCE' && (
+        <div className="space-y-8 animate-in slide-in-from-right-4 duration-500">
+          <div className="bg-slate-900 rounded-[40px] p-8 text-white shadow-2xl relative overflow-hidden">
+            <div className="absolute -top-24 -right-24 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl"></div>
+            
+            <div className="flex items-center gap-4 mb-8 relative z-10">
+              <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <Landmark size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-black tracking-tight leading-none">Financial Control</h3>
+                <p className="text-[10px] font-black text-white/30 uppercase tracking-widest mt-1">Withdrawal Limits & Gateways</p>
+              </div>
+            </div>
+
+            <div className="space-y-8 relative z-10">
+              {/* Min Withdrawal Config */}
+              <div className="bg-white/5 border border-white/10 rounded-[32px] p-6">
+                <label className="block text-[9px] font-black text-white/40 uppercase tracking-[2px] mb-3 ml-1">Minimum Payout Limit (৳)</label>
+                <div className="flex items-center gap-4">
+                  <div className="flex-1 relative group">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500 font-black text-lg">৳</span>
+                    <input 
+                      type="number"
+                      value={editAppConfig.minWithdrawal}
+                      onChange={(e) => setEditAppConfig({...editAppConfig, minWithdrawal: parseInt(e.target.value) || 0})}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 pl-10 text-xl font-black focus:outline-none focus:border-emerald-500 transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Methods List */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center px-1">
+                  <h4 className="text-[10px] font-black text-white/40 uppercase tracking-widest flex items-center gap-2">
+                    <CreditCard size={14} /> Active Gateways
+                  </h4>
+                  <button 
+                    onClick={() => setShowMethodForm(true)}
+                    className="text-[9px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1 hover:underline"
+                  >
+                    <Plus size={12} /> Add Method
+                  </button>
+                </div>
+
+                {showMethodForm && (
+                  <div className="bg-white/10 border border-white/10 rounded-3xl p-6 space-y-4 animate-in slide-in-from-top-4 duration-300">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">New Method Setup</span>
+                      <button onClick={() => setShowMethodForm(false)} className="text-white/40"><X size={16} /></button>
+                    </div>
+                    <div className="space-y-3">
+                      <input 
+                        type="text" 
+                        value={newMethod.name}
+                        onChange={(e) => setNewMethod({...newMethod, name: e.target.value})}
+                        className="w-full bg-black/20 border border-white/10 rounded-xl p-3 text-sm font-bold focus:outline-none" 
+                        placeholder="Method Name (e.g. PayPal)" 
+                      />
+                      <div className="flex items-center gap-3">
+                        <div onClick={() => fileInputRef.current?.click()} className="flex-1 bg-black/20 border border-dashed border-white/20 rounded-xl h-24 flex flex-col items-center justify-center text-[10px] font-black uppercase cursor-pointer hover:bg-black/40">
+                          {newMethod.icon ? (
+                            <img src={newMethod.icon} alt="Preview" className="h-12 object-contain" />
+                          ) : (
+                            <>
+                              <Upload size={20} className="mb-1 opacity-40" />
+                              <span>Upload Logo</span>
+                            </>
+                          )}
+                        </div>
+                        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleMethodIconUpload} />
+                      </div>
+                      <button 
+                        onClick={handleAddMethod}
+                        className="w-full bg-emerald-600 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg"
+                      >
+                        Add Gateway
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 gap-3">
+                  {editAppConfig.withdrawalMethods.map((method) => (
+                    <div key={method.id} className="bg-white/5 border border-white/10 p-4 rounded-3xl flex items-center justify-between group transition-all">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-white rounded-xl p-2 flex items-center justify-center overflow-hidden">
+                          <img src={method.icon} alt={method.name} className="h-full object-contain" />
+                        </div>
+                        <div>
+                          <p className="text-[13px] font-black tracking-tight">{method.name}</p>
+                          <p className="text-[8px] font-black text-white/30 uppercase tracking-widest">Active System ID: {method.id}</p>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => handleRemoveMethod(method.id)}
+                        className="p-3 text-white/20 hover:text-rose-500 transition-colors"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <button 
+                onClick={handleSaveFinanceConfig}
+                className="w-full bg-emerald-600 py-6 rounded-[32px] text-white font-black text-[11px] uppercase tracking-[3px] shadow-2xl shadow-emerald-900/40 active:scale-95 transition-all mt-4"
+              >
+                Sync Financial Hub <Save size={18} className="inline ml-1" />
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -559,23 +722,6 @@ const AdminScreen: React.FC<AdminScreenProps> = ({ analytics, submissions, withd
               <h4 className="text-xl font-black text-slate-900 tracking-tight">{analytics.uninstalls.toLocaleString()}</h4>
               <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Uninstalled Count</p>
             </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-[40px] custom-shadow border border-slate-50">
-             <div className="flex items-center gap-3 mb-4">
-                <div className="bg-slate-100 p-2 rounded-xl"><HistoryIcon size={16} className="text-slate-600"/></div>
-                <h4 className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Recent System Health</h4>
-             </div>
-             <div className="space-y-3">
-                <div className="flex justify-between items-center p-3 bg-slate-50 rounded-2xl">
-                   <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Server Uptime</span>
-                   <span className="text-[10px] font-black text-emerald-600">99.98%</span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-slate-50 rounded-2xl">
-                   <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Avg Review Time</span>
-                   <span className="text-[10px] font-black text-blue-600">14.2 Hours</span>
-                </div>
-             </div>
           </div>
         </div>
       )}

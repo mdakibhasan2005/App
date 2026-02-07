@@ -82,7 +82,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
       </div>
 
       <div className="mt-8 text-center">
-        <p className="text-slate-300 text-[10px] font-bold uppercase tracking-[4px]">TakaEarn v2.4.0</p>
+        <p className="text-slate-300 text-[10px] font-bold uppercase tracking-[4px]">Akib Pay v3.1.2</p>
       </div>
       
       <div className="h-24"></div>

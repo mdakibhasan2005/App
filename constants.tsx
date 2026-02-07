@@ -56,17 +56,20 @@ export const MOCK_TASKS: Task[] = [
   }
 ];
 
+// Added userEmail to mock transactions to satisfy Transaction interface requirements
 export const MOCK_TRANSACTIONS: Transaction[] = [
-  { id: 'tr1', taskName: 'Facebook 2FA Setup', amount: 7, date: '2023-10-24', status: TaskStatus.APPROVED },
-  { id: 'tr2', taskName: 'Instagram ID Follow', amount: 3, date: '2023-10-24', status: TaskStatus.PENDING },
-  { id: 'tr3', taskName: 'Survey Submission', amount: 5, date: '2023-10-23', status: TaskStatus.APPROVED },
-  { id: 'tr4', taskName: 'YouTube Sub & Like', amount: 4, date: '2023-10-22', status: TaskStatus.REJECTED },
+  { id: 'tr1', userEmail: 'rahat@test.com', taskName: 'Facebook 2FA Setup', amount: 7, date: '2023-10-24', status: TaskStatus.APPROVED },
+  { id: 'tr2', userEmail: 'rahat@test.com', taskName: 'Instagram ID Follow', amount: 3, date: '2023-10-24', status: TaskStatus.PENDING },
+  { id: 'tr3', userEmail: 'rahat@test.com', taskName: 'Survey Submission', amount: 5, date: '2023-10-23', status: TaskStatus.APPROVED },
+  { id: 'tr4', userEmail: 'rahat@test.com', taskName: 'YouTube Sub & Like', amount: 4, date: '2023-10-22', status: TaskStatus.REJECTED },
 ];
 
+// Added userEmail to mock submissions to satisfy Submission interface requirements
 export const MOCK_SUBMISSIONS: Submission[] = [
   {
     id: 'sub1',
     userId: 'u101',
+    userEmail: 'rahat@test.com',
     userName: 'Rahat Islam',
     taskId: 't1',
     taskTitle: 'Facebook 2FA Setup',
@@ -81,6 +84,7 @@ export const MOCK_SUBMISSIONS: Submission[] = [
   {
     id: 'sub2',
     userId: 'u102',
+    userEmail: 'sadia@test.com',
     userName: 'Sadia Sultana',
     taskId: 't2',
     taskTitle: 'Instagram ID Follow',
@@ -95,6 +99,7 @@ export const MOCK_SUBMISSIONS: Submission[] = [
   {
     id: 'sub3',
     userId: 'u103',
+    userEmail: 'tanvir@test.com',
     userName: 'Tanvir Hossain',
     taskId: 't3',
     taskTitle: 'Survey Submission',

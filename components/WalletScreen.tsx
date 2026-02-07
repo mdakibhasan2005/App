@@ -1,15 +1,16 @@
 
 import React from 'react';
-import { Transaction, TaskStatus } from '../types';
+import { Transaction, TaskStatus, AppConfig } from '../types';
 import { ArrowDownLeft, ArrowUpRight, History, Wallet, Clock, CreditCard } from 'lucide-react';
 
 interface WalletScreenProps {
   balance: { total: number; available: number; pending: number };
+  appConfig: AppConfig;
   transactions: Transaction[];
   onWithdrawClick: () => void;
 }
 
-const WalletScreen: React.FC<WalletScreenProps> = ({ balance, transactions, onWithdrawClick }) => {
+const WalletScreen: React.FC<WalletScreenProps> = ({ balance, appConfig, transactions, onWithdrawClick }) => {
   return (
     <div className="p-6 animate-in slide-in-from-right-10 duration-500">
       <div className="flex items-center gap-3 mb-6 px-1">
@@ -61,23 +62,18 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ balance, transactions, onWi
           <h3 className="font-black text-slate-900 text-[11px] uppercase tracking-widest flex items-center gap-2">
             <CreditCard size={15} className="text-emerald-500" /> Withdrawal Gateways
           </h3>
-          <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-tighter">Min ৳20</span>
+          <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-tighter">Min ৳{appConfig.minWithdrawal}</span>
         </div>
         
         <div className="grid grid-cols-4 gap-3">
-          {[
-            { id: 'bkash', name: 'bKash', logo: 'https://freelogopng.com/images/all_img/1656234745bkash-app-logo.png' },
-            { id: 'nagad', name: 'Nagad', logo: 'https://freelogopng.com/images/all_img/1656234832nagad-logo-png.png' },
-            { id: 'rocket', name: 'Rocket', logo: 'https://freelogopng.com/images/all_img/1656234907rocket-logo-png.png' },
-            { id: 'binance', name: 'USDT', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Binance_logo.svg/1024px-Binance_logo.svg.png' },
-          ].map((gateway) => (
+          {appConfig.withdrawalMethods.map((gateway) => (
             <button 
               key={gateway.id}
               onClick={onWithdrawClick}
               className="bg-white p-4 rounded-[28px] shadow-sm border border-slate-100 hover:border-emerald-500/30 hover:bg-emerald-50/20 transition-all group flex flex-col items-center justify-center gap-3 active:scale-95"
             >
               <div className="h-9 w-full flex items-center justify-center overflow-hidden">
-                 <img src={gateway.logo} alt={gateway.name} className="h-full object-contain filter transition-all" />
+                 <img src={gateway.icon} alt={gateway.name} className="h-full object-contain filter transition-all" />
               </div>
               <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest group-hover:text-emerald-600">{gateway.name}</span>
             </button>

@@ -1,52 +1,23 @@
 
 import React, { useState } from 'react';
 import { ArrowLeft, Send, Landmark, Smartphone, Wallet, Info, Check } from 'lucide-react';
+import { AppConfig } from '../types';
 
 interface WithdrawScreenProps {
   availableBalance: number;
+  appConfig: AppConfig;
   onSubmit: (method: string, account: string, amount: number) => void;
   onBack: () => void;
 }
 
-const METHODS = [
-  { 
-    id: 'bKash', 
-    name: 'bKash', 
-    color: 'border-[#D12053]', 
-    activeBg: 'bg-[#D12053]/5',
-    icon: 'https://freelogopng.com/images/all_img/1656234745bkash-app-logo.png' 
-  },
-  { 
-    id: 'Nagad', 
-    name: 'Nagad', 
-    color: 'border-[#F7941D]', 
-    activeBg: 'bg-[#F7941D]/5',
-    icon: 'https://freelogopng.com/images/all_img/1656234832nagad-logo-png.png' 
-  },
-  { 
-    id: 'Rocket', 
-    name: 'Rocket', 
-    color: 'border-[#8C3494]', 
-    activeBg: 'bg-[#8C3494]/5',
-    icon: 'https://freelogopng.com/images/all_img/1656234907rocket-logo-png.png'
-  },
-  { 
-    id: 'Binance', 
-    name: 'Binance', 
-    color: 'border-[#F3BA2F]', 
-    activeBg: 'bg-[#F3BA2F]/5',
-    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Binance_logo.svg/1024px-Binance_logo.svg.png' 
-  },
-];
-
-const WithdrawScreen: React.FC<WithdrawScreenProps> = ({ availableBalance, onSubmit, onBack }) => {
-  const [method, setMethod] = useState('bKash');
+const WithdrawScreen: React.FC<WithdrawScreenProps> = ({ availableBalance, appConfig, onSubmit, onBack }) => {
+  const [method, setMethod] = useState(appConfig.withdrawalMethods[0]?.id || '');
   const [account, setAccount] = useState('');
-  const [amount, setAmount] = useState('20');
+  const [amount, setAmount] = useState(appConfig.minWithdrawal.toString());
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const numAmount = parseFloat(amount) || 0;
-  const canSubmit = numAmount >= 20 && numAmount <= availableBalance && account.trim().length > 5;
+  const canSubmit = numAmount >= appConfig.minWithdrawal && numAmount <= availableBalance && account.trim().length > 5;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +30,7 @@ const WithdrawScreen: React.FC<WithdrawScreenProps> = ({ availableBalance, onSub
     }, 1500);
   };
 
-  const selectedMethod = METHODS.find(m => m.id === method) || METHODS[0];
+  const selectedMethod = appConfig.withdrawalMethods.find(m => m.id === method) || appConfig.withdrawalMethods[0];
 
   return (
     <div className="min-h-full bg-slate-50 animate-in slide-in-from-right-10 duration-500">
@@ -93,7 +64,7 @@ const WithdrawScreen: React.FC<WithdrawScreenProps> = ({ availableBalance, onSub
                <span className="text-[10px] font-bold text-slate-400">Secure Transfer</span>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              {METHODS.map((m) => {
+              {appConfig.withdrawalMethods.map((m) => {
                 const isActive = method === m.id;
                 return (
                   <button
@@ -133,7 +104,7 @@ const WithdrawScreen: React.FC<WithdrawScreenProps> = ({ availableBalance, onSub
             <div className="relative group">
               <input 
                 type="text"
-                placeholder={method === 'Binance' ? "Enter Binance Pay ID" : `Enter 11-digit ${method} Number`}
+                placeholder={method === 'Binance' ? "Enter Binance Pay ID" : `Enter 11-digit ${selectedMethod?.name || 'Account'} Number`}
                 value={account}
                 onChange={(e) => setAccount(e.target.value)}
                 className="w-full bg-white p-6 rounded-[32px] border-2 border-slate-100 focus:border-slate-900 focus:outline-none transition-all shadow-sm text-black font-bold pl-16 placeholder:text-slate-300"
@@ -151,7 +122,7 @@ const WithdrawScreen: React.FC<WithdrawScreenProps> = ({ availableBalance, onSub
             <div className="relative group">
               <input 
                 type="number"
-                min="20"
+                min={appConfig.minWithdrawal}
                 max={availableBalance}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
@@ -163,7 +134,7 @@ const WithdrawScreen: React.FC<WithdrawScreenProps> = ({ availableBalance, onSub
               </div>
             </div>
             <div className="flex justify-between mt-2 px-2">
-              <p className="text-[10px] text-slate-400 font-black uppercase tracking-tight">Minimum: ৳20.00</p>
+              <p className="text-[10px] text-slate-400 font-black uppercase tracking-tight">Minimum: ৳{appConfig.minWithdrawal.toFixed(2)}</p>
               <button 
                 type="button"
                 onClick={() => setAmount(availableBalance.toFixed(0))}

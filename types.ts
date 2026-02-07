@@ -58,8 +58,22 @@ export interface TutorialConfig {
   steps: TutorialStep[];
 }
 
+export interface WithdrawalMethod {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  activeBg: string;
+}
+
+export interface AppConfig {
+  minWithdrawal: number;
+  withdrawalMethods: WithdrawalMethod[];
+}
+
 export interface Transaction {
   id: string;
+  userEmail: string; // Linked to user
   taskName: string;
   amount: number;
   date: string;
@@ -73,6 +87,7 @@ export interface Transaction {
 export interface Submission {
   id: string;
   userId: string;
+  userEmail: string; // Linked to user
   userName: string;
   taskId: string;
   taskTitle: string;
@@ -91,4 +106,10 @@ export interface UserProfile {
   email: string;
   phone: string;
   joinDate: string;
+}
+
+export interface UserBalance {
+  total: number;
+  available: number;
+  pending: number;
 }

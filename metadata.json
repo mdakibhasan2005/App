@@ -1,6 +1,6 @@
 {
-  "name": "TakaEarn - Daily Task Rewards",
-  "description": "A modern mobile-first task earning application designed for the Bangladesh market, featuring real-time balance tracking, multi-wallet withdrawal (bKash, Nagad), and seamless task submission.",
+  "name": "Akib Pay - Daily Task Rewards",
+  "description": "A premium mobile-first task earning platform for Bangladesh, featuring real-time server-synced balances, secure authentication, and instant administrative updates.",
   "requestFramePermissions": [
     "camera"
   ]
