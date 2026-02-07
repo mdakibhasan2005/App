@@ -14,7 +14,6 @@ import AccountSettingsScreen from './components/AccountSettingsScreen';
 import { Home, Wallet, User, Bell, PlayCircle } from 'lucide-react';
 
 const App: React.FC = () => {
-  // STORAGE KEYS
   const STORAGE_KEY_USERS = 'akibpay_users';
   const STORAGE_KEY_TASKS = 'akibpay_tasks';
   const STORAGE_KEY_BALANCES = 'akibpay_user_balances';
@@ -26,21 +25,19 @@ const App: React.FC = () => {
   const STORAGE_KEY_CURRENT_USER = 'akibpay_current_session';
   const STORAGE_KEY_THEME = 'akibpay_theme';
 
-  const COOLDOWN_HOURS = 12;
-  const COOLDOWN_MS = COOLDOWN_HOURS * 60 * 60 * 1000;
+  const COOLDOWN_MS = 12 * 60 * 60 * 1000;
 
-  // Safe JSON Parse Helper
   const safeParse = <T,>(key: string, fallback: T): T => {
     try {
       const item = localStorage.getItem(key);
-      return item ? JSON.parse(item) : fallback;
+      if (!item || item === 'undefined' || item === 'null') return fallback;
+      return JSON.parse(item) as T;
     } catch (e) {
       console.error(`Error parsing ${key}:`, e);
       return fallback;
     }
   };
 
-  // Theme State
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     return (localStorage.getItem(STORAGE_KEY_THEME) as 'light' | 'dark') || 'light';
   });
@@ -54,14 +51,13 @@ const App: React.FC = () => {
 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
-  // App State
   const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem(STORAGE_KEY_CURRENT_USER) !== null);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [currentScreen, setCurrentScreen] = useState<Screen>('HOME');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const [registeredUsers, setRegisteredUsers] = useState<UserAccount[]>(() => 
-    safeParse(STORAGE_KEY_USERS, [{ name: 'Rahat Islam', email: 'rahat@test.com', password: 'password123', failedAttempts: 0 }])
+    safeParse(STORAGE_KEY_USERS, [{ name: 'Rahat Islam', email: 'rahat@test.com', password: 'password123' }])
   );
 
   const [tasks, setTasks] = useState<Task[]>(() => safeParse(STORAGE_KEY_TASKS, MOCK_TASKS));
@@ -102,7 +98,6 @@ const App: React.FC = () => {
 
   const activeBalance = userBalances[userProfile.email] || { total: 0, available: 0, pending: 0 };
 
-  // Persistence Effects
   useEffect(() => localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(registeredUsers)), [registeredUsers]);
   useEffect(() => localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(tasks)), [tasks]);
   useEffect(() => localStorage.setItem(STORAGE_KEY_BALANCES, JSON.stringify(userBalances)), [userBalances]);
@@ -277,7 +272,7 @@ const App: React.FC = () => {
         </div>
       )}
       <div className="flex-1 overflow-y-auto no-scrollbar">{renderScreen()}</div>
-      {isLoggedIn && currentScreen !== 'SUBMIT_TASK' && currentScreen !== 'WITHDRAW' && currentScreen !== 'ADMIN' && currentScreen !== 'ADMIN_LOGIN' && (
+      {isLoggedIn && !['SUBMIT_TASK', 'WITHDRAW', 'ADMIN', 'ADMIN_LOGIN'].includes(currentScreen) && (
         <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 px-6 py-4 flex justify-between items-center z-50">
           <button onClick={() => setCurrentScreen('HOME')} className={`flex flex-col items-center gap-1 ${currentScreen === 'HOME' ? 'text-emerald-600' : 'text-slate-400'}`}><Home size={22} /><span className="text-[8px] font-bold uppercase">Tasks</span></button>
           <button onClick={() => setCurrentScreen('WALLET')} className={`flex flex-col items-center gap-1 ${currentScreen === 'WALLET' ? 'text-emerald-600' : 'text-slate-400'}`}><Wallet size={22} /><span className="text-[8px] font-bold uppercase">Wallet</span></button>
