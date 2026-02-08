@@ -1,4 +1,4 @@
-export type Screen = 'AUTH' | 'HOME' | 'WALLET' | 'PROFILE' | 'SUBMIT_TASK' | 'ADMIN' | 'WITHDRAW' | 'TUTORIAL' | 'ACCOUNT_SETTINGS';
+export type Screen = 'AUTH' | 'HOME' | 'WALLET' | 'PROFILE' | 'SUBMIT_TASK' | 'ADMIN' | 'WITHDRAW' | 'TUTORIAL' | 'ACCOUNT_SETTINGS' | 'ADMIN_LOGIN';
 
 export enum TaskStatus {
   PENDING = 'Pending',

@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Screen, Task, TaskStatus, Transaction, Submission, TutorialConfig, UserProfile, AppAnalytics, AdminCredentials, UserAccount, UserBalance, AppConfig } from './types';
-import { MOCK_TASKS } from './constants';
-import HomeScreen from './components/HomeScreen';
-import WalletScreen from './components/WalletScreen';
-import SubmitTaskScreen from './components/SubmitTaskScreen';
-import WithdrawScreen from './components/WithdrawScreen';
-import AdminScreen from './components/AdminScreen';
-import AdminLoginScreen from './components/AdminLoginScreen';
-import ProfileScreen from './components/ProfileScreen';
-import LoginScreen from './components/LoginScreen';
-import TutorialScreen from './components/TutorialScreen';
-import AccountSettingsScreen from './components/AccountSettingsScreen';
+import { Screen, Task, TaskStatus, Transaction, Submission, TutorialConfig, UserProfile, AppAnalytics, AdminCredentials, UserAccount, UserBalance, AppConfig } from './types.ts';
+import { MOCK_TASKS } from './constants.tsx';
+import HomeScreen from './components/HomeScreen.tsx';
+import WalletScreen from './components/WalletScreen.tsx';
+import SubmitTaskScreen from './components/SubmitTaskScreen.tsx';
+import WithdrawScreen from './components/WithdrawScreen.tsx';
+import AdminScreen from './components/AdminScreen.tsx';
+import AdminLoginScreen from './components/AdminLoginScreen.tsx';
+import ProfileScreen from './components/ProfileScreen.tsx';
+import LoginScreen from './components/LoginScreen.tsx';
+import TutorialScreen from './components/TutorialScreen.tsx';
+import AccountSettingsScreen from './components/AccountSettingsScreen.tsx';
 import { Home, Wallet, User, Bell, PlayCircle } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -30,7 +30,7 @@ const App: React.FC = () => {
   const safeParse = <T,>(key: string, fallback: T): T => {
     try {
       const item = localStorage.getItem(key);
-      if (!item || item === 'undefined' || item === 'null') return fallback;
+      if (!item || item === 'undefined' || item === 'null' || item === '') return fallback;
       return JSON.parse(item) as T;
     } catch (e) {
       console.error(`Error parsing ${key}:`, e);
@@ -39,7 +39,11 @@ const App: React.FC = () => {
   };
 
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    return (localStorage.getItem(STORAGE_KEY_THEME) as 'light' | 'dark') || 'light';
+    try {
+      return (localStorage.getItem(STORAGE_KEY_THEME) as 'light' | 'dark') || 'light';
+    } catch {
+      return 'light';
+    }
   });
 
   useEffect(() => {
@@ -51,7 +55,14 @@ const App: React.FC = () => {
 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
-  const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem(STORAGE_KEY_CURRENT_USER) !== null);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    try {
+      return localStorage.getItem(STORAGE_KEY_CURRENT_USER) !== null;
+    } catch {
+      return false;
+    }
+  });
+  
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [currentScreen, setCurrentScreen] = useState<Screen>('HOME');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -98,7 +109,9 @@ const App: React.FC = () => {
 
   const activeBalance = userBalances[userProfile.email] || { total: 0, available: 0, pending: 0 };
 
-  useEffect(() => localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(registeredUsers)), [registeredUsers]);
+  useEffect(() => {
+    if (registeredUsers.length > 0) localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(registeredUsers));
+  }, [registeredUsers]);
   useEffect(() => localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(tasks)), [tasks]);
   useEffect(() => localStorage.setItem(STORAGE_KEY_BALANCES, JSON.stringify(userBalances)), [userBalances]);
   useEffect(() => localStorage.setItem(STORAGE_KEY_SUBMISSIONS, JSON.stringify(submissions)), [submissions]);
@@ -249,7 +262,7 @@ const App: React.FC = () => {
     switch (currentScreen) {
       case 'HOME': return <HomeScreen balance={activeBalance} tasks={tasks} onTaskClick={handleTaskClick} onNotificationClick={() => showSmsNotification("Notifications", "Zero new alerts.")} userName={userProfile.name} getTaskCooldown={getTaskCooldown} isAdminAuthenticated={isAdminAuthenticated} onUpdateTask={t => setTasks(p => p.map(x => x.id === t.id ? t : x))} />;
       case 'WALLET': return <WalletScreen balance={activeBalance} appConfig={appConfig} transactions={transactions.filter(t => t.userEmail === userProfile.email)} onWithdrawClick={() => setCurrentScreen('WITHDRAW')} />;
-      case 'SUBMIT_TASK': return selectedTask ? <SubmitTaskScreen task={selectedTask} onSubmit={handleSubmitTask} onBack={() => setCurrentScreen('HOME')} /> : <HomeScreen balance={activeBalance} tasks={tasks} onTaskClick={handleTaskClick} onNotificationClick={() => {}} userName={userProfile.name} getTaskCooldown={getTaskCooldown} isAdminAuthenticated={isAdminAuthenticated} onUpdateTask={() => {}} />;
+      case 'SUBMIT_TASK': return selectedTask ? <SubmitTaskScreen task={selectedTask} onSubmit={handleSubmitTask} onBack={() => setCurrentScreen('HOME')} /> : null;
       case 'WITHDRAW': return <WithdrawScreen availableBalance={activeBalance.available} appConfig={appConfig} onSubmit={handleWithdrawSubmit} onBack={() => setCurrentScreen('WALLET')} />;
       case 'PROFILE': return <ProfileScreen userProfile={userProfile} theme={theme} onToggleTheme={toggleTheme} supportTelegram={tutorialConfig.supportTelegram} telegramChannel={tutorialConfig.telegramChannel} onAdminClick={() => isAdminAuthenticated ? setCurrentScreen('ADMIN') : setCurrentScreen('ADMIN_LOGIN')} onSettingsClick={() => setCurrentScreen('ACCOUNT_SETTINGS')} onLogout={() => { localStorage.removeItem(STORAGE_KEY_CURRENT_USER); setIsLoggedIn(false); setIsAdminAuthenticated(false); setCurrentScreen('HOME'); }} />;
       case 'TUTORIAL': return <TutorialScreen config={tutorialConfig} />;
